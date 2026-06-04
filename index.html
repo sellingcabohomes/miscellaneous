@@ -811,6 +811,7 @@ function renderExList(key, exercises) {
     cb.className = 'ex-check';
     cb.checked = ex.done;
     cb.id = `cb-${key}-${i}`;
+    cb.addEventListener('click', e => e.stopPropagation());
     cb.addEventListener('change', e => {
       e.stopPropagation();
       toggleExercise(key, i, cb.checked);
