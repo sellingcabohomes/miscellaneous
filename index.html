@@ -1,0 +1,1297 @@
+<!--
+  MOBILITY TRACKER — Personal Daily Movement App
+
+  GITHUB PAGES DEPLOYMENT (free hosting):
+  1. Go to github.com and create a new repository (e.g. "mobility-tracker")
+  2. Upload this index.html file to the repository
+  3. Go to Settings > Pages > Source: Deploy from branch > main > / (root)
+  4. Save — your app will be live in ~60 seconds at:
+     https://yourusername.github.io/mobility-tracker
+
+  DATA: All tracking data is saved locally in your browser (localStorage).
+  To back up: open DevTools > Application > localStorage > copy the value.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobility Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #0a0a0a;
+      --surface:       #111111;
+      --elevated:      #171717;
+      --border:        #262626;
+      --border-sub:    #1a1a1a;
+      --text:          #f5f5f5;
+      --text-sec:      #737373;
+      --text-muted:    #404040;
+      --accent:        #818cf8;
+      --success:       #22c55e;
+      --warning:       #f59e0b;
+      --mcgill-bg:     #7c3aed;
+      --mcgill-text:   #c4b5fd;
+      --thoracic-bg:   #0e7490;
+      --thoracic-text: #a5f3fc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────── */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .app-title {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .app-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      letter-spacing: 0.04em;
+    }
+
+    .header-date {
+      text-align: right;
+      font-size: 13px;
+      color: var(--text-sec);
+    }
+
+    .header-date-day {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ─── Today Section ──────────────────────────────────────── */
+    .today-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .today-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .today-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .today-day-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .today-day-theme {
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-top: 1px;
+    }
+
+    /* ─── Section label ──────────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* ─── Exercise list ──────────────────────────────────────── */
+    .ex-list {
+      padding: 4px 20px 14px;
+      background: #0d0d0d;
+    }
+
+    .ex-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #161616;
+    }
+
+    .ex-item:last-child { border-bottom: none; }
+
+    .ex-main-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    /* Custom checkbox */
+    .ex-check {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      margin-top: 2px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+      position: relative;
+      transition: background 0.12s, border-color 0.12s;
+      flex-shrink: 0;
+    }
+
+    .ex-check:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .ex-check:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 8px;
+      border: 1.5px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .ex-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ex-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .ex-name {
+      font-size: 14px;
+      color: var(--text);
+      transition: color 0.15s, text-decoration 0.15s;
+    }
+
+    .ex-name.done {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .ex-reps {
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .tag-mcgill    { background: var(--mcgill-bg);    color: var(--mcgill-text);    }
+    .tag-thoracic  { background: var(--thoracic-bg);  color: var(--thoracic-text);  }
+
+    .vid-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.12s, background 0.12s;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .vid-btn:hover { color: var(--text-sec); background: #1f1f1f; }
+    .vid-btn.active { color: var(--accent); }
+
+    .vid-wrap {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.22s ease-out;
+    }
+
+    .vid-wrap.open { max-height: 230px; }
+
+    .vid-inner {
+      padding: 8px 0 4px;
+    }
+
+    .vid-inner iframe {
+      width: 100%;
+      max-width: 360px;
+      height: 202px;
+      border: none;
+      border-radius: 8px;
+      display: block;
+    }
+
+    /* ─── Percent badge ──────────────────────────────────────── */
+    .pct-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pct-zero    { background: #181818; color: var(--text-muted); }
+    .pct-partial { background: rgba(245,158,11,0.12); color: var(--warning); }
+    .pct-full    { background: rgba(34,197,94,0.12);  color: var(--success); }
+
+    /* ─── Notes ──────────────────────────────────────────────── */
+    .notes-wrap {
+      padding: 8px 0 2px;
+    }
+
+    .notes-area {
+      width: 100%;
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-sec);
+      font-family: inherit;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 7px 10px;
+      resize: none;
+      min-height: 46px;
+      outline: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .notes-area:focus {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .notes-area::placeholder { color: var(--text-muted); }
+
+    .notes-icon {
+      font-size: 11px;
+      opacity: 0.65;
+      line-height: 1;
+    }
+
+    /* ─── Month cards ────────────────────────────────────────── */
+    .calendar-section { display: flex; flex-direction: column; gap: 10px; }
+
+    .month-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .month-header {
+      padding: 14px 20px 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .month-header:hover { background: #161616; }
+
+    .month-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .month-name-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .month-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .month-chevron {
+      color: var(--text-muted);
+      font-size: 11px;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .month-card.open .month-chevron { transform: rotate(180deg); }
+
+    /* ─── Heatmap ────────────────────────────────────────────── */
+    .heatmap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .hm-day {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: #1a1a1a;
+      cursor: default;
+      position: relative;
+      transition: opacity 0.1s;
+      flex-shrink: 0;
+    }
+
+    .hm-day:hover > .hm-tip { display: block; }
+
+    .hm-day.partial  { background: rgba(245,158,11,0.55); }
+    .hm-day.complete { background: var(--success); }
+    .hm-day.future   { opacity: 0.3; }
+
+    .hm-tip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f1f1f;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      white-space: nowrap;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    /* ─── Month content ──────────────────────────────────────── */
+    .month-content {
+      height: 0;
+      overflow: hidden;
+      transition: height 0.22s ease-out;
+    }
+
+    /* ─── Day rows ───────────────────────────────────────────── */
+    .day-row {
+      border-top: 1px solid var(--border-sub);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .day-row:hover { background: #141414; }
+
+    .day-row-header {
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .day-row-left {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+    }
+
+    .day-num {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      min-width: 22px;
+    }
+
+    .day-name-label {
+      font-size: 13px;
+      color: var(--text-sec);
+    }
+
+    .day-row-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-row.is-today .day-num { color: var(--accent); }
+
+    /* Day exercises container — JS-controlled height */
+    .day-ex-wrap {
+      height: 0;
+      overflow: hidden;
+      transition: height 0.18s ease-out;
+    }
+
+    /* ─── Today button ───────────────────────────────────────── */
+    .today-jump-btn {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      z-index: 500;
+      transition: opacity 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .today-jump-btn:hover { opacity: 0.82; }
+
+    /* ─── Scrollbar ──────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<button class="today-jump-btn" onclick="scrollToToday()">Today</button>
+
+<div class="container">
+  <header class="app-header">
+    <div>
+      <div class="app-title">Mobility</div>
+      <div class="app-subtitle">Daily Movement Tracker</div>
+    </div>
+    <div id="hdr-date" class="header-date"></div>
+  </header>
+
+  <div id="today-section"></div>
+
+  <div class="section-label">Annual Calendar — 2026</div>
+  <div id="calendar" class="calendar-section"></div>
+</div>
+
+<script>
+'use strict';
+
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const YEAR = 2026;
+const STORAGE_KEY = 'mobilityLog2026';
+
+const MONTH_NAMES = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+const DAY_NAMES   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ─── Weekly Protocol ─────────────────────────────────────────────────────────
+
+const PROTOCOL = {
+  1: {
+    theme: 'Spinal Stability + Hip Openers',
+    exercises: [
+      { name: 'Open Book Rotations',    reps: '2 × 8/side',               tag: 'THORACIC' },
+      { name: 'Modified Curl-Up',       reps: '3 reps × 10 sec hold',     tag: 'MCGILL'   },
+      { name: 'Side Plank',             reps: '3 reps × 10–20 sec/side',  tag: 'MCGILL'   },
+      { name: 'Bird Dog',               reps: '3 reps × 10 sec/side',     tag: 'MCGILL'   },
+      { name: '90/90 Hip Switches',     reps: '2 × 10'                                     },
+      { name: 'Glute Bridges',          reps: '2 × 12 (3-sec hold at top)'                 },
+      { name: 'Deep Squat Hold',        reps: '2 × 30 sec'                                 },
+    ]
+  },
+  2: {
+    theme: 'Mobility Flow + Core Activation',
+    exercises: [
+      { name: "World's Greatest Stretch",  reps: '1 min/side'    },
+      { name: 'Seated Hamstring Scoops',   reps: '2 × 10'        },
+      { name: 'Ankle Wall Drives',         reps: '2 × 10/side'   },
+      { name: 'Deep Goblet Squat',         reps: '3 × 5, slow'   },
+      { name: 'Dead Bug',                  reps: '2 × 8/side'    },
+      { name: 'Side Plank with Hip Dips',  reps: '2 × 10/side'   },
+      { name: 'Glute Bridge Marches',      reps: '2 × 8/side'    },
+    ]
+  },
+  3: {
+    theme: 'Stability + Glute Circuit',
+    exercises: [
+      { name: 'Modified Curl-Up',              reps: '3 reps × 10 sec hold',    tag: 'MCGILL' },
+      { name: 'Side Plank',                    reps: '3 reps × 10–20 sec/side', tag: 'MCGILL' },
+      { name: 'Bird Dog',                      reps: '3 reps × 10 sec/side',    tag: 'MCGILL' },
+      { name: 'Banded Lateral Walks',          reps: '2 × 10/side'                            },
+      { name: 'Hip Flexor Stretch',            reps: '30 sec/side'                            },
+      { name: 'Glute Bridges w/ 3-sec squeeze',reps: '2 × 10'                                 },
+    ]
+  },
+  4: {
+    theme: 'Full Mobility Flow',
+    exercises: [
+      { name: 'Open Book Rotations',         reps: '2 × 8/side',     tag: 'THORACIC' },
+      { name: 'Quadruped Thoracic Rotation', reps: '2 × 8/side',     tag: 'THORACIC' },
+      { name: 'Cat-Cow',                     reps: '10 reps'                          },
+      { name: '90/90 Hip Switches',          reps: '2 × 10'                           },
+      { name: 'Deep Squat Hold',             reps: '2 × 30 sec'                       },
+      { name: "World's Greatest Stretch",    reps: '1 min/side'                       },
+      { name: 'Seated Hamstring Scoops',     reps: '2 × 10'                           },
+      { name: 'Kneeling Hip Flexor Stretch', reps: '2 × 30 sec/side'                  },
+      { name: 'Ankle Wall Drives',           reps: '2 × 10/side'                      },
+    ]
+  },
+  5: {
+    theme: 'Core + Anti-Rotation Stability',
+    exercises: [
+      { name: 'Modified Curl-Up',              reps: '3 reps × 10 sec hold',  tag: 'MCGILL' },
+      { name: 'Side Plank with Reach-Through', reps: '3 × 5 reps/side',       tag: 'MCGILL' },
+      { name: 'Bird Dog Row (band)',            reps: '3 × 6/side',            tag: 'MCGILL' },
+      { name: 'Dead Bug',                      reps: '2 × 8/side'                            },
+      { name: 'Glute Bridge Marches',          reps: '2 × 8/side'                            },
+      { name: 'Standing Pallof Press (band)',  reps: '2 × 8/side'                            },
+    ]
+  },
+  6: {
+    theme: 'Glute & Mobility Reset',
+    exercises: [
+      { name: 'Banded Glute Bridges',      reps: '2 × 12'      },
+      { name: 'Side-Lying Clamshells',     reps: '2 × 12/side'  },
+      { name: 'Lateral Walks',             reps: '2 × 10/side'  },
+      { name: 'Deep Goblet Squat Hold',    reps: '2 × 30 sec'   },
+      { name: "World's Greatest Stretch",  reps: '1 min/side'   },
+      { name: 'Seated Hamstring Scoops',   reps: '2 × 10'       },
+    ]
+  },
+  0: {
+    theme: 'Active Recovery',
+    exercises: [
+      { name: "Child's Pose Breathing",  reps: '5 deep belly breaths' },
+      { name: 'Cat-Cow',                 reps: '10 reps'               },
+      { name: 'Bird Dog',                reps: '1 × 6/side',           tag: 'MCGILL' },
+      { name: 'Seated Forward Fold',     reps: '1 min'                 },
+      { name: 'Hip Flexor Stretch',      reps: '1 min/side'            },
+      { name: 'Assisted Deep Squat Hold',reps: '1 min'                 },
+    ]
+  }
+};
+
+// ─── Video Map ────────────────────────────────────────────────────────────────
+// Sources: Squat University, BackFitPro, Physio Tutors, Strength Side
+
+const VIDEO_MAP = {
+  // McGill Big 3 — dedicated tutorial video covering all three
+  'Modified Curl-Up':               '2aGunzN5YWA', // McGill Big 3 — Squat University
+  'Side Plank':                     '2aGunzN5YWA', // McGill Big 3 — Squat University
+  'Bird Dog':                       '2aGunzN5YWA', // McGill Big 3 — Squat University
+  'Side Plank with Reach-Through':  '2aGunzN5YWA', // McGill Big 3 variation
+  'Bird Dog Row (band)':            '2aGunzN5YWA', // McGill Big 3 variation
+
+  // Thoracic mobility
+  'Open Book Rotations':            'rDviWORCWEw', // Open Books Sidelying Thoracic Rotation
+  'Quadruped Thoracic Rotation':    '5wv670fHuG4', // Ultimate Thoracic Mobility Routine — Squat University
+
+  // Hip mobility
+  '90/90 Hip Switches':             'qq_Z7sAmVrA', // 90/90 Hip Switch — improve hip health
+  "World's Greatest Stretch":       '-CiWQ2IvY34', // Squat University
+  'Kneeling Hip Flexor Stretch':    'YqF8GVmyBKY', // Kneeling hip flexor stretch
+  'Hip Flexor Stretch':             'gRmFkfKMqKA', // Hip flexor stretch tutorial
+  'Deep Squat Hold':                'U2ZGOl5LFMQ', // Deep squat hold
+  'Assisted Deep Squat Hold':       'U2ZGOl5LFMQ',
+  'Deep Goblet Squat':              '9PqvTl4y7UA', // Goblet squat — Squat University
+  'Deep Goblet Squat Hold':         '9PqvTl4y7UA',
+
+  // Core
+  'Dead Bug':                       'MCVX9wRd_h0', // Dead Bug for lower back pain
+  'Side Plank with Hip Dips':       'K4J8HbHDFoQ', // Side plank hip dips
+  'Standing Pallof Press (band)':   'P16SQlmWj1o', // Banded Pallof Press — core stability
+
+  // Glutes
+  'Glute Bridges':                  'tl6xvm4-Qk0', // Squat University glute bridge
+  'Glute Bridges w/ 3-sec squeeze': 'tl6xvm4-Qk0',
+  'Banded Glute Bridges':           'tl6xvm4-Qk0',
+  'Glute Bridge Marches':           'Ix_ONPV3_gI', // Glute bridge marches
+  'Banded Lateral Walks':           'Ik56TtTQy0s', // Banded lateral walks
+  'Lateral Walks':                  'Ik56TtTQy0s',
+  'Side-Lying Clamshells':          'DAAjOdwZdks', // Side lying clam shell
+
+  // Hamstrings / ankles / spine
+  'Seated Hamstring Scoops':        'UBa7wBucN-4', // Hamstring mobilization
+  'Ankle Wall Drives':              '-c2l_NBV234', // Squat University ankle mobility
+  'Cat-Cow':                        'kqnua4rHVVA', // Cat cow mobility
+  "Child's Pose Breathing":         'qULTwquOuT4', // Child's pose breathing
+  'Seated Forward Fold':            'F1lBNGCz3nE', // Seated forward fold
+};
+
+// ─── State ────────────────────────────────────────────────────────────────────
+
+let logData = {};
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    logData = raw ? JSON.parse(raw) : {};
+  } catch(e) {
+    logData = {};
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(logData));
+}
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
+
+function dateKey(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function todayKey() {
+  const n = new Date();
+  return dateKey(n.getFullYear(), n.getMonth(), n.getDate());
+}
+
+function getDayOfWeek(y, m, d) {
+  return new Date(y, m, d).getDay();
+}
+
+function daysInMonth(y, m) {
+  return new Date(y, m+1, 0).getDate();
+}
+
+function getOrInitDay(key, y, m, d) {
+  if (!logData[key]) {
+    const dow = getDayOfWeek(y, m, d);
+    const proto = PROTOCOL[dow];
+    logData[key] = {
+      exercises: proto.exercises.map(e => ({
+        name: e.name,
+        reps: e.reps,
+        done: false,
+        tag: e.tag || null
+      })),
+      notes: ''
+    };
+  }
+  return logData[key];
+}
+
+function calcPct(key) {
+  const day = logData[key];
+  if (!day || !day.exercises.length) return 0;
+  const done = day.exercises.filter(e => e.done).length;
+  return Math.round((done / day.exercises.length) * 100);
+}
+
+function pctClass(pct) {
+  if (pct === 0)   return 'pct-zero';
+  if (pct === 100) return 'pct-full';
+  return 'pct-partial';
+}
+
+function pctLabel(key) {
+  const day = logData[key];
+  if (!day) return '';
+  const done = day.exercises.filter(e => e.done).length;
+  const total = day.exercises.length;
+  if (done === 0 && total > 0) return `0/${total}`;
+  return `${done}/${total}`;
+}
+
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+}
+
+function formatFullDate(y, m, d) {
+  const dt = new Date(y, m, d);
+  return dt.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+}
+
+// ─── Smooth height animation ──────────────────────────────────────────────────
+
+function openPanel(el) {
+  el.style.transition = 'height 0.2s ease-out';
+  el.style.height = el.scrollHeight + 'px';
+  el.addEventListener('transitionend', function h() {
+    el.style.height = 'auto';
+    el.removeEventListener('transitionend', h);
+  });
+}
+
+function closePanel(el) {
+  el.style.height = el.scrollHeight + 'px';
+  el.offsetHeight; // force reflow
+  el.style.transition = 'height 0.18s ease-out';
+  el.style.height = '0';
+}
+
+// ─── updateDayPercent — TARGETED update, never rebuilds DOM ──────────────────
+
+function updateDayPercent(key) {
+  const pct = calcPct(key);
+  const label = pctLabel(key);
+  const cls = pctClass(pct);
+
+  // Update all badges keyed to this date (today-view + calendar)
+  document.querySelectorAll(`[data-pct="${key}"]`).forEach(el => {
+    el.textContent = label;
+    el.className = `pct-badge ${cls}`;
+  });
+
+  // Update heatmap squares
+  document.querySelectorAll(`[data-hm="${key}"]`).forEach(sq => {
+    sq.className = 'hm-day' + (pct === 100 ? ' complete' : pct > 0 ? ' partial' : '');
+    const fut = key > todayKey();
+    if (fut) sq.classList.add('future');
+  });
+}
+
+// ─── Render: exercise list ────────────────────────────────────────────────────
+
+function renderExList(key, exercises) {
+  const ul = document.createElement('div');
+  ul.className = 'ex-list';
+
+  exercises.forEach((ex, i) => {
+    const slug = slugify(ex.name);
+    const vidId = VIDEO_MAP[ex.name];
+
+    const item = document.createElement('div');
+    item.className = 'ex-item';
+
+    // Main row
+    const mainRow = document.createElement('div');
+    mainRow.className = 'ex-main-row';
+
+    // Checkbox
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'ex-check';
+    cb.checked = ex.done;
+    cb.id = `cb-${key}-${i}`;
+    cb.addEventListener('change', e => {
+      e.stopPropagation();
+      toggleExercise(key, i, cb.checked);
+    });
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'ex-body';
+
+    const nameRow = document.createElement('div');
+    nameRow.className = 'ex-name-row';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'ex-name' + (ex.done ? ' done' : '');
+    nameEl.id = `exname-${key}-${i}`;
+    nameEl.textContent = ex.name;
+
+    nameRow.appendChild(nameEl);
+
+    if (ex.tag === 'MCGILL') {
+      const t = document.createElement('span');
+      t.className = 'tag tag-mcgill';
+      t.textContent = 'McGill';
+      nameRow.appendChild(t);
+    } else if (ex.tag === 'THORACIC') {
+      const t = document.createElement('span');
+      t.className = 'tag tag-thoracic';
+      t.textContent = 'Thoracic';
+      nameRow.appendChild(t);
+    }
+
+    if (vidId) {
+      const vbtn = document.createElement('button');
+      vbtn.className = 'vid-btn';
+      vbtn.title = 'Watch video';
+      vbtn.textContent = '▶';
+      vbtn.dataset.vidKey = `vid-${slug}`;
+      vbtn.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleVideo(slug, vidId, vbtn);
+      });
+      nameRow.appendChild(vbtn);
+    }
+
+    const repsEl = document.createElement('div');
+    repsEl.className = 'ex-reps';
+    repsEl.textContent = ex.reps;
+
+    body.appendChild(nameRow);
+    body.appendChild(repsEl);
+
+    // Video container
+    const vidWrap = document.createElement('div');
+    vidWrap.className = 'vid-wrap';
+    vidWrap.id = `vid-${slug}`;
+
+    mainRow.appendChild(cb);
+    mainRow.appendChild(body);
+
+    item.appendChild(mainRow);
+    item.appendChild(vidWrap);
+
+    ul.appendChild(item);
+  });
+
+  // Notes
+  const notesWrap = document.createElement('div');
+  notesWrap.className = 'notes-wrap';
+  notesWrap.addEventListener('click', e => e.stopPropagation());
+
+  const ta = document.createElement('textarea');
+  ta.className = 'notes-area';
+  ta.placeholder = 'Notes for today… (e.g. felt tight in left hip)';
+  ta.rows = 2;
+  ta.value = (logData[key] && logData[key].notes) || '';
+  ta.addEventListener('input', e => {
+    e.stopPropagation();
+    saveNotes(key, ta.value);
+  });
+
+  notesWrap.appendChild(ta);
+  ul.appendChild(notesWrap);
+
+  return ul;
+}
+
+// ─── Render: today section ────────────────────────────────────────────────────
+
+function renderTodaySection() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  const key = dateKey(y, m, d);
+  const dow = now.getDay();
+  const proto = PROTOCOL[dow];
+  const data = getOrInitDay(key, y, m, d);
+
+  const card = document.createElement('div');
+  card.className = 'today-card';
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'today-card-header';
+
+  const left = document.createElement('div');
+  const todayLbl = document.createElement('div');
+  todayLbl.className = 'today-label';
+  todayLbl.textContent = "Today's Workout";
+  const dayTitle = document.createElement('div');
+  dayTitle.className = 'today-day-title';
+  dayTitle.textContent = `${DAY_NAMES[dow]} — ${now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}`;
+  const dayTheme = document.createElement('div');
+  dayTheme.className = 'today-day-theme';
+  dayTheme.textContent = proto.theme;
+
+  left.appendChild(todayLbl);
+  left.appendChild(dayTitle);
+  left.appendChild(dayTheme);
+
+  const badge = document.createElement('span');
+  badge.className = `pct-badge ${pctClass(calcPct(key))}`;
+  badge.dataset.pct = key;
+  badge.textContent = pctLabel(key);
+
+  hdr.appendChild(left);
+  hdr.appendChild(badge);
+  card.appendChild(hdr);
+
+  // Exercise list
+  card.appendChild(renderExList(key, data.exercises));
+
+  document.getElementById('today-section').appendChild(card);
+}
+
+// ─── Render: heatmap ─────────────────────────────────────────────────────────
+
+function renderHeatmap(mi) {
+  const days = daysInMonth(YEAR, mi);
+  const hm = document.createElement('div');
+  hm.className = 'heatmap';
+  const tk = todayKey();
+
+  for (let d = 1; d <= days; d++) {
+    const k = dateKey(YEAR, mi, d);
+    const pct = calcPct(k);
+    let cls = 'hm-day';
+    if (pct === 100) cls += ' complete';
+    else if (pct > 0) cls += ' partial';
+    if (k > tk) cls += ' future';
+
+    const sq = document.createElement('div');
+    sq.className = cls;
+    sq.dataset.hm = k;
+
+    const tip = document.createElement('div');
+    tip.className = 'hm-tip';
+    const dateLabel = new Date(YEAR, mi, d).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    tip.textContent = pct > 0 ? `${dateLabel} · ${pct}%` : dateLabel;
+    sq.appendChild(tip);
+
+    hm.appendChild(sq);
+  }
+  return hm;
+}
+
+// ─── Render: month card ───────────────────────────────────────────────────────
+
+function renderMonthCard(mi) {
+  const days = daysInMonth(YEAR, mi);
+  const tk = todayKey();
+  const todayMi = new Date().getMonth();
+  const isCurrentMonth = mi === todayMi && YEAR === new Date().getFullYear();
+
+  const card = document.createElement('div');
+  card.className = 'month-card' + (isCurrentMonth ? ' open' : '');
+  card.id = `month-${mi}`;
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'month-header';
+
+  const hdrRow = document.createElement('div');
+  hdrRow.className = 'month-header-row';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'month-name-title';
+  nameEl.textContent = MONTH_NAMES[mi];
+
+  const meta = document.createElement('div');
+  meta.className = 'month-meta';
+
+  const mBadge = document.createElement('span');
+  mBadge.className = `pct-badge pct-zero`;
+  mBadge.id = `mpct-${mi}`;
+
+  const chevron = document.createElement('span');
+  chevron.className = 'month-chevron';
+  chevron.textContent = '▼';
+
+  meta.appendChild(mBadge);
+  meta.appendChild(chevron);
+
+  hdrRow.appendChild(nameEl);
+  hdrRow.appendChild(meta);
+
+  hdr.appendChild(hdrRow);
+  hdr.appendChild(renderHeatmap(mi));
+
+  hdr.addEventListener('click', e => {
+    e.stopPropagation();
+    toggleMonth(mi);
+  });
+
+  card.appendChild(hdr);
+
+  // Content
+  const content = document.createElement('div');
+  content.className = 'month-content';
+  content.id = `mcontent-${mi}`;
+
+  for (let d = 1; d <= days; d++) {
+    const k = dateKey(YEAR, mi, d);
+    const dow = getDayOfWeek(YEAR, mi, d);
+    const isToday = k === tk;
+
+    const row = document.createElement('div');
+    row.className = 'day-row' + (isToday ? ' is-today' : '');
+    row.id = `day-${k}`;
+
+    // Day header
+    const rowHdr = document.createElement('div');
+    rowHdr.className = 'day-row-header';
+
+    const left = document.createElement('div');
+    left.className = 'day-row-left';
+
+    const numEl = document.createElement('span');
+    numEl.className = 'day-num';
+    numEl.textContent = d;
+
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'day-name-label';
+    nameLabel.textContent = DAY_SHORT[dow];
+
+    left.appendChild(numEl);
+    left.appendChild(nameLabel);
+
+    const right = document.createElement('div');
+    right.className = 'day-row-right';
+
+    const notesIco = document.createElement('span');
+    notesIco.className = 'notes-icon';
+    notesIco.id = `nicon-${k}`;
+    if (logData[k] && logData[k].notes) notesIco.textContent = '📝';
+
+    const badge = document.createElement('span');
+    badge.className = `pct-badge ${pctClass(calcPct(k))}`;
+    badge.dataset.pct = k;
+    badge.textContent = pctLabel(k);
+
+    right.appendChild(notesIco);
+    right.appendChild(badge);
+
+    rowHdr.appendChild(left);
+    rowHdr.appendChild(right);
+
+    // Exercise wrap
+    const exWrap = document.createElement('div');
+    exWrap.className = 'day-ex-wrap';
+    exWrap.id = `dex-${k}`;
+
+    row.appendChild(rowHdr);
+    row.appendChild(exWrap);
+
+    row.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleDay(k, mi);
+    });
+
+    content.appendChild(row);
+  }
+
+  card.appendChild(content);
+
+  // Set initial open state
+  if (isCurrentMonth) {
+    content.style.height = 'auto';
+  }
+
+  return card;
+}
+
+// ─── Render: full calendar ────────────────────────────────────────────────────
+
+function renderCalendar() {
+  const cal = document.getElementById('calendar');
+  for (let mi = 0; mi < 12; mi++) {
+    cal.appendChild(renderMonthCard(mi));
+  }
+  updateAllMonthBadges();
+}
+
+function updateAllMonthBadges() {
+  for (let mi = 0; mi < 12; mi++) {
+    updateMonthBadge(mi);
+  }
+}
+
+function updateMonthBadge(mi) {
+  const days = daysInMonth(YEAR, mi);
+  let total = 0, done = 0;
+  for (let d = 1; d <= days; d++) {
+    const k = dateKey(YEAR, mi, d);
+    const day = logData[k];
+    if (day && day.exercises.length) {
+      total += day.exercises.length;
+      done += day.exercises.filter(e => e.done).length;
+    }
+  }
+  const el = document.getElementById(`mpct-${mi}`);
+  if (!el) return;
+  if (total === 0) {
+    el.className = 'pct-badge pct-zero';
+    el.textContent = '';
+    return;
+  }
+  const pct = Math.round((done/total)*100);
+  el.className = `pct-badge ${pctClass(pct)}`;
+  el.textContent = `${pct}%`;
+}
+
+// ─── Toggle: month ────────────────────────────────────────────────────────────
+
+function toggleMonth(mi) {
+  const card = document.getElementById(`month-${mi}`);
+  const content = document.getElementById(`mcontent-${mi}`);
+  const isOpen = card.classList.contains('open');
+
+  if (isOpen) {
+    card.classList.remove('open');
+    closePanel(content);
+  } else {
+    card.classList.add('open');
+    openPanel(content);
+  }
+}
+
+// ─── Toggle: day ──────────────────────────────────────────────────────────────
+
+function toggleDay(key, mi) {
+  const row = document.getElementById(`day-${key}`);
+  const exWrap = document.getElementById(`dex-${key}`);
+  if (!row || !exWrap) return;
+
+  const isOpen = row.classList.contains('open');
+
+  if (isOpen) {
+    row.classList.remove('open');
+    closePanel(exWrap);
+  } else {
+    // Lazy-render exercises on first open
+    if (!exWrap.dataset.rendered) {
+      const parts = key.split('-');
+      const y = parseInt(parts[0]), m = parseInt(parts[1])-1, d = parseInt(parts[2]);
+      const data = getOrInitDay(key, y, m, d);
+      saveData();
+      exWrap.appendChild(renderExList(key, data.exercises));
+      exWrap.dataset.rendered = '1';
+      updateDayPercent(key);
+      updateMonthBadge(mi);
+    }
+    row.classList.add('open');
+    openPanel(exWrap);
+  }
+}
+
+// ─── Toggle: exercise checkbox ────────────────────────────────────────────────
+
+function toggleExercise(key, index, checked) {
+  if (!logData[key]) return;
+  logData[key].exercises[index].done = checked;
+  saveData();
+
+  // Update name strikethrough — targeted, no rebuild
+  const nameEl = document.getElementById(`exname-${key}-${index}`);
+  if (nameEl) {
+    if (checked) nameEl.classList.add('done');
+    else nameEl.classList.remove('done');
+  }
+
+  updateDayPercent(key);
+
+  // Update month badge for both today section and calendar
+  const parts = key.split('-');
+  const mi = parseInt(parts[1]) - 1;
+  updateMonthBadge(mi);
+}
+
+// ─── Toggle: video ────────────────────────────────────────────────────────────
+
+function toggleVideo(slug, vidId, btn) {
+  const wrap = document.getElementById(`vid-${slug}`);
+  if (!wrap) return;
+
+  const isOpen = wrap.classList.contains('open');
+
+  if (isOpen) {
+    wrap.classList.remove('open');
+    wrap.style.maxHeight = '0';
+    wrap.innerHTML = '';
+    btn.classList.remove('active');
+  } else {
+    const inner = document.createElement('div');
+    inner.className = 'vid-inner';
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${vidId}?rel=0`;
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    inner.appendChild(iframe);
+    wrap.appendChild(inner);
+    wrap.classList.add('open');
+    wrap.style.maxHeight = '230px';
+    btn.classList.add('active');
+  }
+}
+
+// ─── Save notes ───────────────────────────────────────────────────────────────
+
+function saveNotes(key, text) {
+  if (!logData[key]) return;
+  logData[key].notes = text;
+  saveData();
+
+  const icon = document.getElementById(`nicon-${key}`);
+  if (icon) icon.textContent = text.trim() ? '📝' : '';
+}
+
+// ─── Scroll to today ──────────────────────────────────────────────────────────
+
+function scrollToToday() {
+  const tk = todayKey();
+  const mi = new Date().getMonth();
+
+  // Ensure month is open
+  const card = document.getElementById(`month-${mi}`);
+  if (card && !card.classList.contains('open')) {
+    toggleMonth(mi);
+    // Wait for animation then scroll
+    setTimeout(() => doScrollToDay(tk, mi), 250);
+  } else {
+    doScrollToDay(tk, mi);
+  }
+}
+
+function doScrollToDay(tk, mi) {
+  const dayRow = document.getElementById(`day-${tk}`);
+  if (dayRow) {
+    dayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Expand if not already
+    if (!dayRow.classList.contains('open')) {
+      toggleDay(tk, mi);
+    }
+  }
+}
+
+// ─── Header date ──────────────────────────────────────────────────────────────
+
+function renderHeaderDate() {
+  const now = new Date();
+  const el = document.getElementById('hdr-date');
+  el.innerHTML = `
+    <div>${now.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}</div>
+    <div class="header-date-day">${DAY_NAMES[now.getDay()]}</div>
+  `;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+function init() {
+  loadData();
+  renderHeaderDate();
+  renderTodaySection();
+  renderCalendar();
+}
+
+init();
+</script>
+</body>
+</html>
