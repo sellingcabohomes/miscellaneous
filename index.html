@@ -371,46 +371,56 @@
 
     .month-card.open .month-chevron { transform: rotate(180deg); }
 
-    /* ─── Heatmap ────────────────────────────────────────────── */
-    .heatmap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+    /* ─── Calendar Grid ─────────────────────────────────────── */
+    .cal-grid-wrap {
+      padding: 0 20px 14px;
     }
 
-    .hm-day {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-      background: #1a1a1a;
-      cursor: default;
-      position: relative;
-      transition: opacity 0.1s;
-      flex-shrink: 0;
+    .cal-grid-dow {
+      display: grid;
+      grid-template-columns: repeat(7, 32px);
+      gap: 3px;
+      margin-bottom: 3px;
     }
 
-    .hm-day:hover > .hm-tip { display: block; }
-
-    .hm-day.partial  { background: rgba(245,158,11,0.55); }
-    .hm-day.complete { background: var(--success); }
-    .hm-day.future   { opacity: 0.3; }
-
-    .hm-tip {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 5px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1f1f1f;
-      border: 1px solid var(--border);
-      color: var(--text);
+    .cal-dow-label {
       font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 5px;
-      white-space: nowrap;
-      z-index: 200;
-      pointer-events: none;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 32px;
     }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 32px);
+      gap: 3px;
+    }
+
+    .cal-day {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #1a1a1a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-sec);
+      transition: opacity 0.1s, filter 0.1s;
+      border: 1.5px solid transparent;
+      user-select: none;
+    }
+
+    .cal-day:hover { filter: brightness(1.3); }
+    .cal-day.partial  { background: rgba(245,158,11,0.6); color: #fff; }
+    .cal-day.complete { background: #22c55e; color: #fff; }
+    .cal-day.future   { opacity: 0.3; cursor: default; }
+    .cal-day.today    { border-color: var(--accent); filter: brightness(1.15); }
+    .cal-day.empty    { background: transparent; cursor: default; }
+
+    /* ─── Heatmap (kept for data-hm updates) ────────────────── */
+    .heatmap { display: none; }
 
     /* ─── Month content ──────────────────────────────────────── */
     .month-content {
@@ -632,33 +642,33 @@ const VIDEO_MAP = {
   // Hip mobility
   '90/90 Hip Switches':             'qq_Z7sAmVrA', // 90/90 Hip Switch — improve hip health
   "World's Greatest Stretch":       '-CiWQ2IvY34', // Squat University
-  'Kneeling Hip Flexor Stretch':    'YqF8GVmyBKY', // Kneeling hip flexor stretch
-  'Hip Flexor Stretch':             'gRmFkfKMqKA', // Hip flexor stretch tutorial
-  'Deep Squat Hold':                'U2ZGOl5LFMQ', // Deep squat hold
-  'Assisted Deep Squat Hold':       'U2ZGOl5LFMQ',
-  'Deep Goblet Squat':              '9PqvTl4y7UA', // Goblet squat — Squat University
-  'Deep Goblet Squat Hold':         '9PqvTl4y7UA',
+  'Kneeling Hip Flexor Stretch':    'Q4Ko275cluo', // Kneeling hip flexor stretch — physio tutorial
+  'Hip Flexor Stretch':             'u0ahi1KI6QA', // Top 3 Hip Flexor Stretches — Bob & Brad
+  'Deep Squat Hold':                'S1BJvlSx6q0', // Deep squat hold mobility tutorial
+  'Assisted Deep Squat Hold':       'S1BJvlSx6q0',
+  'Deep Goblet Squat':              'ShvTpCsgTiw', // Goblet Squat Stretch — Squat University
+  'Deep Goblet Squat Hold':         'ShvTpCsgTiw',
 
   // Core
   'Dead Bug':                       'MCVX9wRd_h0', // Dead Bug for lower back pain
-  'Side Plank with Hip Dips':       'K4J8HbHDFoQ', // Side plank hip dips
+  'Side Plank with Hip Dips':       'V4A0wIh5HNk', // Side Plank with Hip Dip — form tutorial
   'Standing Pallof Press (band)':   'P16SQlmWj1o', // Banded Pallof Press — core stability
 
   // Glutes
   'Glute Bridges':                  'tl6xvm4-Qk0', // Squat University glute bridge
   'Glute Bridges w/ 3-sec squeeze': 'tl6xvm4-Qk0',
   'Banded Glute Bridges':           'tl6xvm4-Qk0',
-  'Glute Bridge Marches':           'Ix_ONPV3_gI', // Glute bridge marches
-  'Banded Lateral Walks':           'Ik56TtTQy0s', // Banded lateral walks
-  'Lateral Walks':                  'Ik56TtTQy0s',
+  'Glute Bridge Marches':           'UEwJjVb_CD4', // Glute Bridge March — physical therapy tutorial
+  'Banded Lateral Walks':           'x8DFUsLq8t8', // Banded Lateral Walk — glute activation
+  'Lateral Walks':                  'x8DFUsLq8t8',
   'Side-Lying Clamshells':          'DAAjOdwZdks', // Side lying clam shell
 
   // Hamstrings / ankles / spine
   'Seated Hamstring Scoops':        'UBa7wBucN-4', // Hamstring mobilization
   'Ankle Wall Drives':              '-c2l_NBV234', // Squat University ankle mobility
   'Cat-Cow':                        'kqnua4rHVVA', // Cat cow mobility
-  "Child's Pose Breathing":         'qULTwquOuT4', // Child's pose breathing
-  'Seated Forward Fold':            'F1lBNGCz3nE', // Seated forward fold
+  "Child's Pose Breathing":         'BL8cJBCdJ2Y', // Child's Pose diaphragmatic breathing tutorial
+  'Seated Forward Fold':            'oJX8EKF3TqM', // Seated Forward Fold — hamstring stretch tutorial
 };
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -776,12 +786,8 @@ function updateDayPercent(key) {
     el.className = `pct-badge ${cls}`;
   });
 
-  // Update heatmap squares
-  document.querySelectorAll(`[data-hm="${key}"]`).forEach(sq => {
-    sq.className = 'hm-day' + (pct === 100 ? ' complete' : pct > 0 ? ' partial' : '');
-    const fut = key > todayKey();
-    if (fut) sq.classList.add('future');
-  });
+  // Update calendar grid cell
+  updateCalGridCell(key);
 }
 
 // ─── Render: exercise list ────────────────────────────────────────────────────
@@ -838,15 +844,17 @@ function renderExList(key, exercises) {
       nameRow.appendChild(t);
     }
 
+    const vidUid = `${key}-${i}`;
+
     if (vidId) {
       const vbtn = document.createElement('button');
       vbtn.className = 'vid-btn';
       vbtn.title = 'Watch video';
       vbtn.textContent = '▶';
-      vbtn.dataset.vidKey = `vid-${slug}`;
+      vbtn.dataset.vidKey = `vid-${vidUid}`;
       vbtn.addEventListener('click', e => {
         e.stopPropagation();
-        toggleVideo(slug, vidId, vbtn);
+        toggleVideo(vidUid, vidId, vbtn);
       });
       nameRow.appendChild(vbtn);
     }
@@ -861,7 +869,7 @@ function renderExList(key, exercises) {
     // Video container
     const vidWrap = document.createElement('div');
     vidWrap.className = 'vid-wrap';
-    vidWrap.id = `vid-${slug}`;
+    vidWrap.id = `vid-${vidUid}`;
 
     mainRow.appendChild(cb);
     mainRow.appendChild(body);
@@ -940,35 +948,94 @@ function renderTodaySection() {
   document.getElementById('today-section').appendChild(card);
 }
 
-// ─── Render: heatmap ─────────────────────────────────────────────────────────
+// ─── Render: calendar grid ────────────────────────────────────────────────────
 
-function renderHeatmap(mi) {
+function renderCalGrid(mi) {
   const days = daysInMonth(YEAR, mi);
-  const hm = document.createElement('div');
-  hm.className = 'heatmap';
   const tk = todayKey();
+  const DOW_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'cal-grid-wrap';
+
+  // Day-of-week header
+  const dowRow = document.createElement('div');
+  dowRow.className = 'cal-grid-dow';
+  DOW_LABELS.forEach(lbl => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow-label';
+    el.textContent = lbl;
+    dowRow.appendChild(el);
+  });
+  wrap.appendChild(dowRow);
+
+  // Grid
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+  grid.id = `calgrid-${mi}`;
+
+  // getDay() returns 0=Sun...6=Sat; we want Mon=0 offset
+  const firstDow = getDayOfWeek(YEAR, mi, 1); // 0=Sun
+  const startOffset = (firstDow + 6) % 7; // Mon-based: Mon=0 … Sun=6
+
+  for (let col = 0; col < startOffset; col++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day empty';
+    grid.appendChild(empty);
+  }
 
   for (let d = 1; d <= days; d++) {
     const k = dateKey(YEAR, mi, d);
     const pct = calcPct(k);
-    let cls = 'hm-day';
-    if (pct === 100) cls += ' complete';
-    else if (pct > 0) cls += ' partial';
-    if (k > tk) cls += ' future';
+    const isFuture = k > tk;
+    const isToday = k === tk;
 
-    const sq = document.createElement('div');
-    sq.className = cls;
-    sq.dataset.hm = k;
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    cell.dataset.calDay = k;
+    cell.textContent = d;
 
-    const tip = document.createElement('div');
-    tip.className = 'hm-tip';
-    const dateLabel = new Date(YEAR, mi, d).toLocaleDateString('en-US', {month:'short', day:'numeric'});
-    tip.textContent = pct > 0 ? `${dateLabel} · ${pct}%` : dateLabel;
-    sq.appendChild(tip);
+    if (pct === 100) cell.classList.add('complete');
+    else if (pct > 0) cell.classList.add('partial');
+    if (isFuture) cell.classList.add('future');
+    if (isToday) cell.classList.add('today');
 
-    hm.appendChild(sq);
+    if (!isFuture) {
+      cell.addEventListener('click', e => {
+        e.stopPropagation();
+        const card = document.getElementById(`month-${mi}`);
+        if (card && !card.classList.contains('open')) {
+          toggleMonth(mi);
+          setTimeout(() => { toggleDay(k, mi); scrollToDayRow(k); }, 260);
+        } else {
+          toggleDay(k, mi);
+          scrollToDayRow(k);
+        }
+      });
+    }
+
+    grid.appendChild(cell);
   }
-  return hm;
+
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function scrollToDayRow(k) {
+  const el = document.getElementById(`day-${k}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ─── Update calendar grid cell ────────────────────────────────────────────────
+
+function updateCalGridCell(key) {
+  const cell = document.querySelector(`[data-cal-day="${key}"]`);
+  if (!cell) return;
+  const pct = calcPct(key);
+  const isFuture = key > todayKey();
+  cell.classList.remove('complete', 'partial');
+  if (pct === 100) cell.classList.add('complete');
+  else if (pct > 0) cell.classList.add('partial');
 }
 
 // ─── Render: month card ───────────────────────────────────────────────────────
@@ -1012,7 +1079,6 @@ function renderMonthCard(mi) {
   hdrRow.appendChild(meta);
 
   hdr.appendChild(hdrRow);
-  hdr.appendChild(renderHeatmap(mi));
 
   hdr.addEventListener('click', e => {
     e.stopPropagation();
@@ -1020,6 +1086,9 @@ function renderMonthCard(mi) {
   });
 
   card.appendChild(hdr);
+
+  // Calendar grid — always visible, outside collapsible content
+  card.appendChild(renderCalGrid(mi));
 
   // Content
   const content = document.createElement('div');
@@ -1206,8 +1275,8 @@ function toggleExercise(key, index, checked) {
 
 // ─── Toggle: video ────────────────────────────────────────────────────────────
 
-function toggleVideo(slug, vidId, btn) {
-  const wrap = document.getElementById(`vid-${slug}`);
+function toggleVideo(uid, vidId, btn) {
+  const wrap = document.getElementById(`vid-${uid}`);
   if (!wrap) return;
 
   const isOpen = wrap.classList.contains('open');
